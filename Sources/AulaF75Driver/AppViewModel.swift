@@ -217,6 +217,25 @@ public final class AppViewModel: ObservableObject {
         loadSafetyBackupFromDisk()
         refreshEndpoints()
 
+        if !hasInputMonitoring && activeLink.supportsConfigurationWrite {
+            _ = AulaHIDManager.requestInputMonitoringAccess()
+        }
+
+        NotificationCenter.default.addObserver(
+            forName: NSApplication.didBecomeActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                let wasGranted = self.hasInputMonitoring
+                self.refreshEndpoints(silent: true)
+                if !wasGranted && self.hasInputMonitoring {
+                    self.syncFromKeyboard()
+                }
+            }
+        }
+
         // Periodic non-intrusive hardware discovery every 3.5 seconds
         pollTimer = Timer.scheduledTimer(withTimeInterval: 3.5, repeats: true) { [weak self] _ in
             Task { @MainActor [weak self] in

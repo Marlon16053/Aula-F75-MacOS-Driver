@@ -265,6 +265,24 @@ public struct ContentView: View {
                     .foregroundStyle(model.isErrorBanner ? Color.orange : Color.white.opacity(0.78))
                     .lineLimit(1)
 
+                if !model.hasInputMonitoring || model.isErrorBanner {
+                    Button {
+                        model.requestPermissions()
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "lock.open.fill")
+                                .font(.system(size: 9.5, weight: .bold))
+                            Text(model.t("Jetzt in Systemeinstellungen freigeben ↗", "Grant in System Settings ↗"))
+                                .font(.system(size: 10.5, weight: .bold, design: .rounded))
+                        }
+                        .foregroundStyle(.black)
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 3.5)
+                        .background(Color.orange, in: Capsule())
+                    }
+                    .buttonStyle(.plain)
+                }
+
                 Spacer()
 
                 if model.activeTab == .create {

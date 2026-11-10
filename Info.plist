@@ -27,5 +27,7 @@
   <string>14.0</string>
   <key>NSHighResolutionCapable</key>
   <true/>
+  <key>NSInputMonitoringUsageDescription</key>
+  <string>AULA F75 Studio benötigt Zugriff auf den USB/2.4G-HID-Kanal, um Lichteffekte, Tastenbelegungen, Makros und den Standby-Timer deiner AULA F75 Tastatur zu steuern.</string>
 </dict>
 </plist>
