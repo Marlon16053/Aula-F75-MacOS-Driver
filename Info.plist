@@ -6,7 +6,7 @@
   <key>CFBundleDevelopmentRegion</key>
   <string>de</string>
   <key>CFBundleExecutable</key>
-  <string>Aula F75 Driver</string>
+  <string>AulaF75Driver</string>
   <key>CFBundleIdentifier</key>
   <string>com.marlonknubel.aula-f75-driver</string>
   <key>CFBundleIconFile</key>
