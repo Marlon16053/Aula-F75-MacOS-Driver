@@ -520,6 +520,16 @@ public struct ContentView: View {
                         }
                         .frame(width: 135)
                     }
+
+                    Toggle(isOn: $model.autoOffOnMacSleep) {
+                        Label(
+                            model.t("LEDs sofort aus bei Mac-Ruhezustand", "LEDs off on Mac sleep/shutdown"),
+                            systemImage: "power.dotted"
+                        )
+                        .font(.system(size: 11.5, weight: .medium))
+                    }
+                    .toggleStyle(.switch)
+                    .controlSize(.small)
                 }
                 .padding(16)
                 .frame(width: 310)

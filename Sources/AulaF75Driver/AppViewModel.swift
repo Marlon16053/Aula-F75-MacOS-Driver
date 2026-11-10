@@ -183,6 +183,8 @@ public final class AppViewModel: ObservableObject {
     @Published public var lighting: LightingConfiguration = LightingConfiguration()
     @Published public var sleepTimeout: AulaSleepTimeout = .fiveMinutes
     @Published public var liveHardwareStreamEnabled: Bool = false
+    @Published public var autoOffOnMacSleep: Bool = true
+    private var lightingBeforeMacSleep: LightingConfiguration?
 
     // Studio Per-Key & Interactive Stage State
     @Published public var perKeyColors: [Int: RGBColor] = [:]
@@ -242,6 +244,60 @@ public final class AppViewModel: ObservableObject {
                 self?.refreshEndpoints(silent: true)
             }
         }
+
+        registerMacSleepAndPowerObservers()
+    }
+
+    private func registerMacSleepAndPowerObservers() {
+        let wsCenter = NSWorkspace.shared.notificationCenter
+        let sleepNames: [NSNotification.Name] = [
+            NSWorkspace.willSleepNotification,
+            NSWorkspace.screensDidSleepNotification,
+            NSWorkspace.willPowerOffNotification
+        ]
+        for name in sleepNames {
+            wsCenter.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+                Task { @MainActor [weak self] in
+                    self?.handleMacGoingToSleepOrOff()
+                }
+            }
+        }
+
+        let wakeNames: [NSNotification.Name] = [
+            NSWorkspace.didWakeNotification,
+            NSWorkspace.screensDidWakeNotification
+        ]
+        for name in wakeNames {
+            wsCenter.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+                Task { @MainActor [weak self] in
+                    self?.handleMacWakingUp()
+                }
+            }
+        }
+    }
+
+    private func handleMacGoingToSleepOrOff() {
+        guard autoOffOnMacSleep else { return }
+        if lighting.effect != .off {
+            lightingBeforeMacSleep = lighting
+        }
+        var offConfig = lighting
+        offConfig.effect = .off
+        offConfig.brightness = 0
+        offConfig.studioLiveEffect = .none
+        let safeSleep: AulaSleepTimeout = (sleepTimeout == .never) ? .oneMinute : sleepTimeout
+        lighting.effect = .off
+        appendLog("Mac entering sleep/shutdown -> turning off AULA F75 LEDs immediately")
+        // Synchronous fast write before macOS suspends USB/HID
+        _ = try? hidManager.applyLightingAndSleep(config: offConfig, sleepTimeout: safeSleep)
+    }
+
+    private func handleMacWakingUp() {
+        guard autoOffOnMacSleep, let previous = lightingBeforeMacSleep else { return }
+        lightingBeforeMacSleep = nil
+        lighting = previous
+        appendLog("Mac woke up -> restoring AULA F75 lighting (\(previous.effect.rawValue))")
+        applyLightingToKeyboard()
     }
 
     // MARK: Localization Helper

@@ -634,9 +634,6 @@ public final class AulaHIDManager: @unchecked Sendable {
             [kIOHIDVendorIDKey: AulaConstants.wirelessVendorID, kIOHIDProductIDKey: AulaConstants.bluetoothAltProductID]
         ]
         IOHIDManagerSetDeviceMatchingMultiple(manager, matchDicts as CFArray)
-        _ = IOHIDManagerOpen(manager, IOOptionBits(kIOHIDOptionsTypeNone))
-        defer { IOHIDManagerClose(manager, IOOptionBits(kIOHIDOptionsTypeNone)) }
-
         guard let set = IOHIDManagerCopyDevices(manager) else { return [] }
         let count = CFSetGetCount(set)
         var ptrs = [UnsafeRawPointer?](repeating: nil, count: count)
