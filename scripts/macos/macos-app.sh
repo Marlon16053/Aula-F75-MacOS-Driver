@@ -28,6 +28,16 @@ cp "$BIN_PATH" "${MACOS_DIR}/AulaF75Driver"
 chmod +x "${MACOS_DIR}/AulaF75Driver"
 cp "${ROOT_DIR}/Info.plist" "${CONTENTS_DIR}/Info.plist"
 
+if [[ ! -f "${ROOT_DIR}/Resources/AppIcon.icns" ]]; then
+  echo "==> Generating AppIcon.icns"
+  ICONSET_DIR="$(mktemp -d /tmp/aula-iconset.XXXXXX).iconset"
+  swift "${ROOT_DIR}/scripts/macos/make-icon.swift" "$ICONSET_DIR"
+  mkdir -p "${ROOT_DIR}/Resources"
+  iconutil -c icns "$ICONSET_DIR" -o "${ROOT_DIR}/Resources/AppIcon.icns"
+  rm -rf "$ICONSET_DIR"
+fi
+cp "${ROOT_DIR}/Resources/AppIcon.icns" "${RESOURCES_DIR}/AppIcon.icns"
+
 xattr -cr "$APP_BUNDLE" || true
 codesign --force --deep --sign - "$APP_BUNDLE" >/dev/null 2>&1 || true
 
