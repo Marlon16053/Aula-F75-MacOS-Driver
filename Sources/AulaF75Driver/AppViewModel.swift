@@ -257,7 +257,7 @@ public final class AppViewModel: ObservableObject {
         ]
         for name in sleepNames {
             wsCenter.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
-                Task { @MainActor [weak self] in
+                MainActor.assumeIsolated {
                     self?.handleMacGoingToSleepOrOff()
                 }
             }
@@ -269,7 +269,7 @@ public final class AppViewModel: ObservableObject {
         ]
         for name in wakeNames {
             wsCenter.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
-                Task { @MainActor [weak self] in
+                MainActor.assumeIsolated {
                     self?.handleMacWakingUp()
                 }
             }
@@ -277,7 +277,7 @@ public final class AppViewModel: ObservableObject {
     }
 
     private func handleMacGoingToSleepOrOff() {
-        guard autoOffOnMacSleep else { return }
+        guard autoOffOnMacSleep, activeLink.supportsConfigurationWrite else { return }
         if lighting.effect != .off {
             lightingBeforeMacSleep = lighting
         }
